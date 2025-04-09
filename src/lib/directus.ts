@@ -1,4 +1,4 @@
-import { createDirectus, rest, Query } from '@directus/sdk';
+import { createDirectus, rest, readItems } from '@directus/sdk';
 
 // Types pour nos collections
 export interface HomePage {
@@ -32,19 +32,21 @@ export interface NumeroSpecial {
 
 // Définition du schéma pour Directus
 interface Schema {
-  home_page: HomePage;
-  heritage: Heritage;
-  voix_marquantes: VoixMarquante;
-  numeros_speciaux: NumeroSpecial;
+  home_page: HomePage[];
+  heritage: Heritage[];
+  voix_marquantes: VoixMarquante[];
+  numeros_speciaux: NumeroSpecial[];
 }
 
-// Création du client Directus avec le schéma typé
-export const directus = createDirectus<Schema>('http://localhost:8055').with(rest());
+// URL de l'API Directus depuis la variable d'environnement ou fallback vers localhost pour le développement
+const DIRECTUS_URL = import.meta.env.VITE_DIRECTUS_URL || 'http://localhost:8055';
 
-export const getItems = async <T extends keyof Schema>(collection: T) => {
-  return await directus.request(readItems(collection, {
-    sort: ['order']
-  }));
+// Création du client Directus avec le schéma typé
+export const directus = createDirectus<Schema>(DIRECTUS_URL).with(rest());
+
+// Fonction simplifiée pour récupérer les éléments d'une collection
+export const getItems = async (collection: keyof Schema) => {
+  return await directus.request(readItems(collection));
 };
 
 export default directus; 
